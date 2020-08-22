@@ -1,0 +1,110 @@
+/* Network Programming
+
+  Topic: Network structs and system calls
+    pg (18-28)
+
+
+struct addrinfo {
+  int             ai_flags;      // AI_PASSIVE, AI_CANONNAME, etc.
+  int             ai_family;     // AF_INET, AF_INET6, AF_UNSPEC
+  int             ai_socktype;   // SOCK_STREAM, SOCK_DGRAM
+  int             ai_protocol;   // use 0 for "any"
+  size_t          ai_addrlen;    // size of ai_addr in bytes
+  struct sockaddr *ai_addr;      // struct sockaddr_in or _in6
+  char            *ai_canonname; // full canonical hostname
+
+  struct addr_int *ai_next;      // linked list, next node
+};
+
+struct sockaddr {
+  unsigned short  sa_family;   // address family, AF_xx
+  char            sa_data[14]; // 14 bytes of protocol address
+};
+
+
+// IPv4 versions:
+
+  // sockaddr_in can by typecast as a sockaddr (it's easier to work with)
+  struct sockaddr_in {
+    short int          sin_family;  // Address family, AF_INET
+    unsigned short int sin_port;    // Port number
+    struct in_addr     sin_addr;    // Internet address
+    unsigned char      sin_zero[8]; // Same size as struct sockaddr
+  };
+
+  // internet address
+  struct in_addr {
+    uint32_t s_addr;
+  };
+
+
+// IPv6 versions:
+
+  // sockaddr_in can by typecast as a sockaddr (it's easier to work with)
+  struct sockaddr_in6 {
+    uint16_t        sin6_family;
+    uint16_t        sin6_port;
+    uint32_t        sin6_flowinfo; // IPv6 flow information (not sure what this is....)
+    struct in6_addr sin6_addr;
+    uint32_t        sin6_scope_id; // Scope ID (not sure what this is...)
+  };
+
+  struct in6_addr {
+    unsigned char s6_addr[16];
+  };
+
+
+// Converting from IP address struct in_addr bits
+  struct sockaddr_in sa;   // IPv4
+  struct sockaddr_in6 sa6; // IPv6
+
+  // pton ==> presentation (or printable) to network
+  inet_pton(AF_INET, "10.12.110.57", &(sa.sin_addr)); // IPv4
+  inet_pton(AF_INET6, "2001:db8:63b3:1::3490", &(sa6.sin6_addr)); // IPv6
+
+// Converting from struct in_addr to IP address
+  // IPv4
+  char ip4[INET_ADDRSTRLEN];
+  struct sockaddr_in sa; // pretend this is loaded with something
+
+  inet_ntop(AF_INET, &(sa.sin_addr), ip4, INET_ADDRSTRLEN);
+  printf("The IPv4 address is: %s\n", ip4);
+
+  // IPv6
+  char ip6[INET6_ADDRSTRLEN];
+  struct sockaddr_in6 sa6; // pretend this is loaded with something
+
+  inet_ntop(AF_INET6, &(sa6.sin6_addr), ip6, INET6_ADDRSTRLEN);
+  printf("The IPv6 address is: %s\n", ip6);
+
+// Use getaddrinfo to fill the structs you need with data (DNS lookup, etc)
+  #include <sys/types.h>
+  #include <sys/socket.h>
+  #include <netdb.h>
+
+  int getaddrinfo( const char *node,    // e.g. "www.example.com" or IP
+                   const char *service, // e.g. "htpp" or port number
+                   const struct addrinfo *hints,
+                   struct addrinfo **res); // result
+*/
+
+/* Network Programming
+
+  Topic: Sockets (socket(), bind(), connect(), etc.)
+    pg (31-42)
+
+socket() - Get the file descriptor!
+  #include <sys/types.h>
+  #include <sys/socket.h>
+
+  int socket (int domain, int type, int protocol);
+    // domain   : IPv4 or IPv6
+    // type:    : SOCK_STREAM or SOCK_DGRAM
+    // protocol : TCP or UDP
+    // NOTE: Populate these using getaddrinfo
+
+  int bind (int sockfd, struct sockaddr *my_addr, int addrlen);
+    // sockfd   : socket file descriptor (returned from socket() call)
+    // my_addr  : pointer to a struct sockaddr that contains information about your address (port, IP Address)
+    // addrlen  : length in bytes of that address
+*/
