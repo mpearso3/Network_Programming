@@ -8,7 +8,7 @@ struct addrinfo {
   int             ai_flags;      // AI_PASSIVE, AI_CANONNAME, etc.
   int             ai_family;     // AF_INET, AF_INET6, AF_UNSPEC
   int             ai_socktype;   // SOCK_STREAM, SOCK_DGRAM
-  int             ai_protocol;   // use 0 for "any"
+  int             ai_protocol;   // use 0 for "any" (TCP, UDP, etc)
   size_t          ai_addrlen;    // size of ai_addr in bytes
   struct sockaddr *ai_addr;      // struct sockaddr_in or _in6
   char            *ai_canonname; // full canonical hostname
@@ -101,10 +101,15 @@ socket() - Get the file descriptor!
     // domain   : IPv4 or IPv6
     // type:    : SOCK_STREAM or SOCK_DGRAM
     // protocol : TCP or UDP
-    // NOTE: Populate these using getaddrinfo
+    // NOTE: Populate these using getaddrinfo!!!!!!!!!!!!!!!!
 
   int bind (int sockfd, struct sockaddr *my_addr, int addrlen);
     // sockfd   : socket file descriptor (returned from socket() call)
     // my_addr  : pointer to a struct sockaddr that contains information about your address (port, IP Address)
     // addrlen  : length in bytes of that address
+
+  int connect (int sockfd, struct sockaddr* serv_addr, int addrlen);
+    // sockfd    : socket file descriptor (returned from socket() call)
+    // serv_addr : pointer to a struct sockaddr that contains information about your address (port, IP Address)
+    // addrlen   : length in bytes of that address
 */
