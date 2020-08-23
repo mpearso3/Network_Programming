@@ -98,18 +98,34 @@ socket() - Get the file descriptor!
   #include <sys/socket.h>
 
   int socket (int domain, int type, int protocol);
-    // domain   : IPv4 or IPv6
-    // type:    : SOCK_STREAM or SOCK_DGRAM
-    // protocol : TCP or UDP
+    // domain   : IPv4 or IPv6 (ai_family)
+    // type:    : SOCK_STREAM or SOCK_DGRAM (ai_socktype)
+    // protocol : TCP or UDP (ai_protocol)
     // NOTE: Populate these using getaddrinfo!!!!!!!!!!!!!!!!
 
   int bind (int sockfd, struct sockaddr *my_addr, int addrlen);
     // sockfd   : socket file descriptor (returned from socket() call)
-    // my_addr  : pointer to a struct sockaddr that contains information about your address (port, IP Address)
-    // addrlen  : length in bytes of that address
+    // my_addr  : pointer to a struct sockaddr that contains information about your address (port, IP Address) (ai_addr)
+    // addrlen  : length in bytes of that address (ai_addrlen)
 
   int connect (int sockfd, struct sockaddr* serv_addr, int addrlen);
     // sockfd    : socket file descriptor (returned from socket() call)
     // serv_addr : pointer to a struct sockaddr that contains information about your address (port, IP Address)
     // addrlen   : length in bytes of that address
+
+  int listen (int sockfd, int backlog);
+    // sockfd    : socket file descriptor (returned from socket() call)
+    // backlog   : Number of connections allowed on the incoming queue
+    usage:
+      getaddrinfo();
+      socket();
+      bind();
+      listen();
+
+  int accept (int sockfd, struct sockaddr *addr, socklen_t addrlen);
+    // sockfd    : socket file descriptor (returned from listen() call)
+    // addr      : pointer to a local struct sockaddr_storage with incoming information
+    // addrlen   : size of struct sockaddr_storage, will be returend to reflect total number of bytes put in addr
+
+
 */

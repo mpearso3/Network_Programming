@@ -10,22 +10,34 @@
 int struct_ip_example(int argc, char *url);
 int socket_bind_example();
 int socket_connect_example();
+int socket_listen_example();
+int socket_accept_example();
 
 int main(int argc, char * argv[])
 {
   int status = struct_ip_example(argc, argv[1]);
   if (status) {
-    printf("failed struct_ip_example\n");
+    printf("failed socket_ip_example\n");
   }
 
   status = socket_bind_example();
   if (status) {
-    printf("failed struct_bind_example\n");
+    printf("failed socket_bind_example\n");
   }
 
-  socket_connect_example();
+  //status = socket_connect_example();
   if (status) {
-    printf("failed struct_connect_example\n");
+    printf("failed socket_connect_example\n");
+  }
+
+  status = socket_listen_example();
+  if (status) {
+    printf("failed socket_listen_example\n");
+  }
+
+  //status = socket_accept_example();
+  if (status) {
+    printf("failed socket_accept_example\n");
   }
 
   return status;
@@ -63,6 +75,95 @@ int socket_connect_example()
   }
   printf("done connecting...\n");
 
+  freeaddrinfo(results);
+  return 0;
+}
+
+int socket_accept_example()
+{
+  printf("\n");
+  printf(__FUNCTION__);
+  printf("\n");
+
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof hints);
+  hints.ai_flags = AI_PASSIVE;
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+
+  struct addrinfo *results;
+  int status = getaddrinfo(NULL, "3490", &hints, &results);
+  if (status != 0) {
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
+    return 8;
+  }
+
+  int socket_file_descriptor = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
+  if (socket_file_descriptor == -1) {
+    fprintf(stderr, "Failed socket %d\n", socket_file_descriptor);
+    return 9;
+  }
+
+  int yes = 1;
+  if (setsockopt(socket_file_descriptor, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1) {
+    perror("setsockopt");
+    return 10;
+  }
+
+  int bind_status = bind(socket_file_descriptor, results->ai_addr, results->ai_addrlen);
+  printf("bind %d\n", bind_status);
+
+  const int BACKLOG = 10;
+  int listen_status = listen(socket_file_descriptor, BACKLOG);
+  printf("listen %d\n", listen_status);
+
+  struct sockaddr_storage their_addr;
+  socklen_t addr_size;
+  int new_file_descriptor = accept(socket_file_descriptor, (struct sockaddr *)&their_addr, &addr_size);
+
+  freeaddrinfo(results);
+  return 0;
+}
+
+int socket_listen_example()
+{
+  printf("\n");
+  printf(__FUNCTION__);
+  printf("\n");
+
+  struct addrinfo hints;
+  memset(&hints, 0, sizeof hints);
+  hints.ai_flags = AI_PASSIVE;
+  hints.ai_family = AF_UNSPEC;
+  hints.ai_socktype = SOCK_STREAM;
+
+  struct addrinfo *results;
+  int status = getaddrinfo(NULL, "3490", &hints, &results);
+  if (status != 0) {
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
+    return 8;
+  }
+
+  int socket_file_descriptor = socket(results->ai_family, results->ai_socktype, results->ai_protocol);
+  if (socket_file_descriptor == -1) {
+    fprintf(stderr, "Failed socket %d\n", socket_file_descriptor);
+    return 9;
+  }
+
+  int yes = 1;
+  if (setsockopt(socket_file_descriptor, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof yes) == -1) {
+    perror("setsockopt");
+    return 10;
+  }
+
+  int bind_status = bind(socket_file_descriptor, results->ai_addr, results->ai_addrlen);
+  printf("bind %d\n", bind_status);
+
+  const int BACKLOG = 10;
+  int listen_status = listen(socket_file_descriptor, BACKLOG);
+  printf("listen %d\n", listen_status);
+
+  freeaddrinfo(results);
   return 0;
 }
 
@@ -104,6 +205,7 @@ int socket_bind_example()
   int bind_status = bind(socket_file_descriptor, results->ai_addr, results->ai_addrlen);
   printf("bind %d\n", bind_status);
 
+  freeaddrinfo(results);
   return 0;
 }
 
@@ -158,5 +260,6 @@ int struct_ip_example(int argc, char * url)
     printf("IP Address %s, ver: %s\n", ipstr, ipver);
   }
 
+  freeaddrinfo(results);
   return 0;
 }
