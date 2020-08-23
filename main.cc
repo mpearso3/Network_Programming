@@ -6,6 +6,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <errno.h>
 
 int struct_ip_example(int argc, char *url);
 int socket_bind_example();
@@ -25,7 +26,7 @@ int main(int argc, char * argv[])
     printf("failed socket_bind_example\n");
   }
 
-  //status = socket_connect_example();
+  //status = socket_connect_example(); // hangs
   if (status) {
     printf("failed socket_connect_example\n");
   }
@@ -35,7 +36,7 @@ int main(int argc, char * argv[])
     printf("failed socket_listen_example\n");
   }
 
-  //status = socket_accept_example();
+  //status = socket_accept_example(); // hangs
   if (status) {
     printf("failed socket_accept_example\n");
   }
@@ -92,7 +93,7 @@ int socket_accept_example()
   hints.ai_socktype = SOCK_STREAM;
 
   struct addrinfo *results;
-  int status = getaddrinfo(NULL, "3490", &hints, &results);
+  int status = getaddrinfo(NULL, "3491", &hints, &results);
   if (status != 0) {
     fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(status));
     return 8;
@@ -114,12 +115,14 @@ int socket_accept_example()
   printf("bind %d\n", bind_status);
 
   const int BACKLOG = 10;
-  int listen_status = listen(socket_file_descriptor, BACKLOG);
-  printf("listen %d\n", listen_status);
+  int listen_file_descriptor = listen(socket_file_descriptor, BACKLOG);
+  printf("listen %d\n", listen_file_descriptor);
 
   struct sockaddr_storage their_addr;
   socklen_t addr_size;
   int new_file_descriptor = accept(socket_file_descriptor, (struct sockaddr *)&their_addr, &addr_size);
+  printf("accept %d\n", new_file_descriptor);
+  printf("errno %d\n", errno);
 
   freeaddrinfo(results);
   return 0;

@@ -102,16 +102,19 @@ socket() - Get the file descriptor!
     // type:    : SOCK_STREAM or SOCK_DGRAM (ai_socktype)
     // protocol : TCP or UDP (ai_protocol)
     // NOTE: Populate these using getaddrinfo!!!!!!!!!!!!!!!!
+    return: socket file descriptor or -1 for error and sets errno
 
   int bind (int sockfd, struct sockaddr *my_addr, int addrlen);
     // sockfd   : socket file descriptor (returned from socket() call)
     // my_addr  : pointer to a struct sockaddr that contains information about your address (port, IP Address) (ai_addr)
     // addrlen  : length in bytes of that address (ai_addrlen)
+    return: -1 for error and sets errno
 
   int connect (int sockfd, struct sockaddr* serv_addr, int addrlen);
     // sockfd    : socket file descriptor (returned from socket() call)
     // serv_addr : pointer to a struct sockaddr that contains information about your address (port, IP Address)
     // addrlen   : length in bytes of that address
+    return: -1 for error and sets errno
 
   int listen (int sockfd, int backlog);
     // sockfd    : socket file descriptor (returned from socket() call)
@@ -121,11 +124,57 @@ socket() - Get the file descriptor!
       socket();
       bind();
       listen();
+    return: -1 for error and sets errno
 
   int accept (int sockfd, struct sockaddr *addr, socklen_t addrlen);
     // sockfd    : socket file descriptor (returned from listen() call)
     // addr      : pointer to a local struct sockaddr_storage with incoming information
     // addrlen   : size of struct sockaddr_storage, will be returend to reflect total number of bytes put in addr
+    return: -1 for error and sets errno
 
+  // STREAM
+    int send (int sockfd, const void *msg, int len, int flags);
+      // sockfd    : socket file descriptor (returned from socket() or accept() call)
+      // msg       : pointer to the data to send (char *msg = "hello")
+      // len       : length of that data in bytes (strlen(msg))
+      // flags     : set to 0 for now (see man page for send() for more info)
+      return: -1 for error,  number of bytes actually sent out, if this is less than len then it's up to the user to keep sending packets
 
+    int recv (int sockfd, voidk *buf, int len, int flags);
+      // sockfd    : socket file descriptor (returned from socket() or accept() call)
+      // buf       : buffer to read the information into
+      // len       : maximum length of the buffef
+      // flags     : set to 0 for now (see man page for send() for more info)
+      return: -1 for error,  number of bytes actually read into the buffer (return 0 means the remote side has closed the connection)
+
+  // DGRAM
+    int sendto (int sockfd, const void *msg, int len, unsigned int flags, const struct sockaddr *to, socklen_t tolen);
+      // sockfd    : socket file descriptor (returned from socket() or accept() call)
+      // msg       : pointer to the data to send (char *msg = "hello")
+      // len       : length of that data in bytes (strlen(msg))
+      // flags     : set to 0 for now (see man page for send() for more info)
+      // to        : pointer to a struct sockaddr which contains the destination IP address and port (comes from getaddrinfo() or recvfrom())
+      // tolen     : sizeof *to (or sizeof(struct sockaddr_storage))
+      return: -1 for error,  number of bytes actually sent out, if this is less than len then it's up to the user to keep sending packets
+      
+    int recvfrom (int sockfd, void *buf, int len, unsigned int flags, struct sockaddr *from, int *fromlen);
+      // sockfd    : socket file descriptor (returned from socket() or accept() call)
+      // buf       : buffer to read the information into
+      // len       : maximum length of the buffef
+      // flags     : set to 0 for now (see man page for send() for more info)
+      // from      : pointer to a local struct sockaddr_storage that will be filled with the IP address and port of the originating machine
+      // fromlen   : pointer to a local int that should be initialized to sizeof * from (or sizeof (struct sockaddr_storage))
+      return: -1 for error,  number of bytes actually read into the buffer (return 0 means the remote side has closed the connection)
+
+  close (int sockfd);
+    purpose: prevents any more reads and writes to the socket
+    // sockfd    : socket file descriptor (returned from socket() or accept() call)
+
+  int shutdown(int sockfd, int how);
+    purpose: more control over how to close the socket (NOTE: shutdown does not actually close the file descriptor, use close() for that)
+    // sockfd    : socket file descriptor (returned from socket() or accept() call)
+    // how       : 0 --> Further receives are disallowed
+                   1 --> Further sends are disallowed
+                   2 --> Further sends and receives are disallowed (like close())
+    return: -1 for error,  number of bytes actually read into the buffer (return 0 means the remote side has closed the connection)
 */
