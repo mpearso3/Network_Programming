@@ -86,6 +86,7 @@ struct sockaddr {
                    const char *service, // e.g. "htpp" or port number
                    const struct addrinfo *hints,
                    struct addrinfo **res); // result
+  return: 0 if succeeds, non-zero lookup error code in man pages
 */
 
 /* Network Programming
@@ -112,8 +113,8 @@ socket() - Get the file descriptor!
 
   int connect (int sockfd, struct sockaddr* serv_addr, int addrlen);
     // sockfd    : socket file descriptor (returned from socket() call)
-    // serv_addr : pointer to a struct sockaddr that contains information about your address (port, IP Address)
-    // addrlen   : length in bytes of that address
+    // serv_addr : pointer to a struct sockaddr that contains information about your address (port, IP Address) (ai_addr)
+    // addrlen   : length in bytes of that address (ai_addrlen)
     return: -1 for error and sets errno
 
   int listen (int sockfd, int backlog);
