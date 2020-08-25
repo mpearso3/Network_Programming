@@ -10,12 +10,18 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include "helper.h"
 
 #define PORT "3490" // the port users will be connecting to
 
 #define BACKLOG 10 // how many pending connections queue will hold
 
+void * get_in_addr(struct sockaddr *sa)
+{
+  if (sa->sa_family == AF_INET) {
+    return &(((struct sockaddr_in*)sa)->sin_addr);
+  }
+  return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
 void signal_child_handler(int s) // TODO: What is the s for?
 {
   // waitpid() might overwrite errno, save and restore it
