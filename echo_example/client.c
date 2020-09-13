@@ -13,6 +13,9 @@
 
 #define MAXDATASIZE 100 // max number of bytes we can get at once
 
+// Error codes for socket commands
+#define RECEIVE_ERROR -1
+
 void * get_in_addr(struct sockaddr *sa)
 {
   if (sa->sa_family == AF_INET) {
@@ -69,17 +72,32 @@ int main(int argc, char *argv[])
 
   freeaddrinfo(results);
 
-  char buf[MAXDATASIZE];
-  int num_bytes = recv(socket_file_descriptor, buf, MAXDATASIZE-1, 0);
-  // TODO: recv should be a loop that checks to make sure there isn't more data to grab
-  if (num_bytes == -1) {
-    perror("recv");
+  //char buf[MAXDATASIZE];
+
+  printf("client: sending to server\n");
+  int num_sent_bytes = send(socket_file_descriptor, "HEY", 3, 0);
+  printf("client: num_sent_bytes %d\n", num_sent_bytes);
+
+  char receive_buffer[MAXDATASIZE];
+  int num_received_bytes = recv(socket_file_descriptor, receive_buffer, MAXDATASIZE-1, 0);
+  if (num_received_bytes == RECEIVE_ERROR) {
+    perror("client: recv");
     exit(1);
   }
+  printf("client: num_received_bytes %d\n", num_received_bytes);
+  receive_buffer[num_received_bytes] = '\0';
+  printf("client: recieved %s\n", receive_buffer);
 
-  buf[num_bytes] = '\0';
+  //// TODO: recv should be a loop that checks to make sure there isn't more data to grab
+  //int num_bytes = recv(socket_file_descriptor, buf, MAXDATASIZE-1, 0);
+  //if (num_bytes == -1) {
+  //  perror("recv");
+  //  exit(1);
+  //}
 
-  printf("client: received '%s'\n", buf);
+  //buf[num_bytes] = '\0';
+
+  //printf("client: received '%s'\n", buf);
 
   close(socket_file_descriptor);
 

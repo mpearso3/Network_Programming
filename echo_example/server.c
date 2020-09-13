@@ -15,6 +15,11 @@
 
 #define BACKLOG 10 // how many pending connections queue will hold
 
+#define MAXDATASIZE 100
+
+// Error codes for socket commands
+#define RECEIVE_ERROR -1
+
 void * get_in_addr(struct sockaddr *sa)
 {
   if (sa->sa_family == AF_INET) {
@@ -62,7 +67,7 @@ int main(void)
     }
 
     if (setsockopt(socket_file_descriptor, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) == -1) {
-      perror("setsockopt");
+      perror("server: setsockopt");
       exit(1);
     }
 
@@ -83,7 +88,7 @@ int main(void)
   }
 
   if (listen(socket_file_descriptor, BACKLOG) == -1) {
-    perror("listen");
+    perror("server: listen");
     exit(1);
   }
 
@@ -92,7 +97,7 @@ int main(void)
   sigemptyset(&signal_action.sa_mask);
   signal_action.sa_flags = SA_RESTART;
   if (sigaction(SIGCHLD, &signal_action, NULL) == -1) {
-    perror("sigaction");
+    perror("server: sigaction");
     exit(1);
   }
 
@@ -107,23 +112,26 @@ int main(void)
     sin_size = sizeof their_addr;
     new_file_descriptor = accept(socket_file_descriptor, (struct sockaddr *)&their_addr, &sin_size);
     if (new_file_descriptor == -1) {
-      perror("accept");
+      perror("server: accept");
       continue;
     }
 
     inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
-
     printf("server: got connection from %s\n", s);
-
-    if (fork() == 0) { //  this is the child process (fork() returns 0 for child)
-      close(socket_file_descriptor); // child does not need the listener, only parent does
-      if (send(new_file_descriptor, "Hello, World", 12, 0) == -1) {
-        perror("send");
-      }
-      close(new_file_descriptor);
-      exit(0);
+    
+    char receive_buffer[MAXDATASIZE];
+    int num_received_bytes = recv(new_file_descriptor, receive_buffer, MAXDATASIZE-1, 0);
+    if (num_received_bytes == RECEIVE_ERROR) {
+      perror("server: recv");
+      exit(1);
     }
-    close (new_file_descriptor); // parent does not need this, only chld does
+    printf("server: num_received_bytes %d\n", num_received_bytes);
+    receive_buffer[num_received_bytes] = '\0';
+    printf("server: recieved %s\n", receive_buffer);
+
+    // TODO: Can the message and length use a char * instaed of being hard-coded?
+    int num_sent_bytes = send(new_file_descriptor, "HEY back", 8, 0);
+    printf("server: num_sent_bytes %d\n", num_sent_bytes);
   }
 
   return 0;
